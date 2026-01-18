@@ -1,4 +1,4 @@
-// utils/pdfExport.js - LANDSCAPE PDF with full page coverage
+// utils/pdfExport.js - FIXED: No cutoff, proper scaling, full coverage
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 
@@ -9,31 +9,32 @@ export const exportTableToPDF = async (tableElement, filename = 'prayer-times.pd
       return;
     }
 
-    // Create canvas at high quality
+    // Create canvas at lower scale to fit entire table
     const canvas = await html2canvas(tableElement, {
-      scale: 2,
+      scale: 1.2,  // Lower scale so entire content fits
       useCORS: true,
       allowTaint: true,
       logging: false,
       backgroundColor: '#ffffff',
       windowHeight: tableElement.scrollHeight,
       windowWidth: tableElement.scrollWidth,
+      logging: false
     });
 
     const imgData = canvas.toDataURL('image/png');
 
     // Create PDF - LANDSCAPE A4
     const pdf = new jsPDF({
-      orientation: 'portrait',
+      orientation: 'landscape',
       unit: 'mm',
       format: 'a4',
-      compress: true
+      compress: false
     });
 
     // A4 Landscape: 297mm x 210mm
     const pageWidth = 297;
     const pageHeight = 210;
-    const margin = 2;
+    const margin = 1;  // Minimal margin
 
     // Calculate image dimensions to fit the page
     const availableWidth = pageWidth - (margin * 2);
@@ -44,7 +45,7 @@ export const exportTableToPDF = async (tableElement, filename = 'prayer-times.pd
     const canvasHeight = canvas.height;
     const aspectRatio = canvasWidth / canvasHeight;
 
-    // Calculate final dimensions
+    // Calculate final dimensions - fit to width first
     let finalWidth = availableWidth;
     let finalHeight = finalWidth / aspectRatio;
 
@@ -54,11 +55,11 @@ export const exportTableToPDF = async (tableElement, filename = 'prayer-times.pd
       finalWidth = finalHeight * aspectRatio;
     }
 
-    // Center on page
-    const xPosition = (pageWidth - finalWidth) / 2;
+    // Position to start from left margin (NOT centered)
+    const xPosition = margin;
     const yPosition = margin;
 
-    // Add image to PDF
+    // Add image to PDF - no centering, starts from left
     pdf.addImage(imgData, 'PNG', xPosition, yPosition, finalWidth, finalHeight);
 
     // Handle multi-page if needed
@@ -69,8 +70,8 @@ export const exportTableToPDF = async (tableElement, filename = 'prayer-times.pd
       currentPage++;
       pdf.addPage([pageWidth, pageHeight], 'landscape');
       
-      const position = -(currentPage - 1) * availableHeight;
-      pdf.addImage(imgData, 'PNG', xPosition, position + yPosition, finalWidth, finalHeight);
+      const position = -(currentPage - 1) * availableHeight + yPosition;
+      pdf.addImage(imgData, 'PNG', xPosition, position, finalWidth, finalHeight);
       
       heightRemaining -= availableHeight;
     }

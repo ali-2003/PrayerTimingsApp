@@ -58,74 +58,74 @@ export default function PrayerTable({ prayerData, mosqueInfo, customAngles, sear
           <table className="w-full border-collapse text-base" style={{ minWidth: '100%' }}>
             <thead>
               <tr className="bg-blue-600 text-white">
-                <th className="px-4 py-4 text-center font-bold text-lg">Day</th>
-                <th className="px-4 py-4 text-center font-bold text-lg">{monthAbbr}</th>
-                <th className="px-4 py-4 text-center font-bold text-lg">Hijri</th>
-                <th className="px-4 py-4 text-center font-bold text-lg">Fajr</th>
-                {hasIqamah && <th className="px-4 py-4 text-center font-bold bg-orange-400 text-lg">Fajr Iqamah</th>}
-                <th className="px-4 py-4 text-center font-bold text-lg">Duha</th>
-                <th className="px-4 py-4 text-center font-bold text-lg">Zuhr</th>
-                {hasIqamah && <th className="px-4 py-4 text-center font-bold bg-orange-400 text-lg">Zuhr Iqamah</th>}
-                <th className="px-4 py-4 text-center font-bold text-lg">Asr</th>
-                {hasIqamah && <th className="px-4 py-4 text-center font-bold bg-orange-400 text-lg">Asr Iqamah</th>}
-                <th className="px-4 py-4 text-center font-bold text-lg">Maghrib</th>
-                {hasIqamah && <th className="px-4 py-4 text-center font-bold bg-orange-400 text-lg">Maghrib Iqamah</th>}
-                <th className="px-4 py-4 text-center font-bold text-lg">Isha</th>
-                {hasIqamah && <th className="px-4 py-4 text-center font-bold bg-orange-400 text-lg">Isha Iqamah</th>}
+                <th className="px-4 py-4 text-center font-bold text-xl">Day</th>
+                <th className="px-4 py-4 text-center font-bold text-xl">{monthAbbr}</th>
+                <th className="px-4 py-4 text-center font-bold text-xl">Hijri</th>
+                <th className="px-4 py-4 text-center font-bold text-xl">Fajr</th>
+                {hasIqamah && <th className="px-4 py-4 text-center font-bold bg-orange-400 text-xl">Fajr Iqamah</th>}
+                <th className="px-4 py-4 text-center font-bold text-xl">Duha</th>
+                <th className="px-4 py-4 text-center font-bold text-xl">Zuhr</th>
+                {hasIqamah && <th className="px-4 py-4 text-center font-bold bg-orange-400 text-xl">Zuhr Iqamah</th>}
+                <th className="px-4 py-4 text-center font-bold text-xl">Asr</th>
+                {hasIqamah && <th className="px-4 py-4 text-center font-bold bg-orange-400 text-xl">Asr Iqamah</th>}
+                <th className="px-4 py-4 text-center font-bold text-xl">Maghrib</th>
+                {hasIqamah && <th className="px-4 py-4 text-center font-bold bg-orange-400 text-xl">Maghrib Iqamah</th>}
+                <th className="px-4 py-4 text-center font-bold text-xl">Isha</th>
+                {hasIqamah && <th className="px-4 py-4 text-center font-bold bg-orange-400 text-xl">Isha Iqamah</th>}
               </tr>
             </thead>
             <tbody>
               {prayerData.map((day, index) => (
                 <tr key={index} className={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
-                  <td className="px-4 py-4 text-center font-bold text-gray-800 text-lg">
+                  <td className="px-4 py-4 text-center font-bold text-gray-800 text-xl">
                     {day.dayName}
                   </td>
-                  <td className="px-4 py-4 text-center font-bold text-gray-800 text-lg">
+                  <td className="px-4 py-4 text-center font-bold text-gray-800 text-xl">
                     {day.date}
                   </td>
-                  <td className="px-4 py-4 text-center text-lg font-semibold text-blue-700">
+                  <td className="px-4 py-4 text-center text-xl font-semibold text-blue-700">
                     {day.hijri || '-'}
                   </td>
-                  <td className="px-4 py-4 text-center font-semibold text-2xl text-gray-900">
+          <td className="px-4 py-4 text-center font-semibold text-2xl text-gray-900 whitespace-nowrap">
                     {day.timings.fajr}
                   </td>
                   {hasIqamah && (
-                    <td className={`px-4 py-4 text-center font-bold text-2xl ${getIqamahCellColor(index, 'fajr')}`}>
+                    <td className={`px-4 py-4 text-center font-bold text-2xl whitespace-nowrap ${getIqamahCellColor(index, 'fajr')}`}>
                       {shouldShowIqamah(index, 'fajr') ? day.iqamahInfo.fajr?.time : ''}
                     </td>
                   )}
-                  <td className="px-4 py-4 text-center text-2xl text-gray-800 font-semibold">
+                  <td className="px-4 py-4 text-center text-2xl text-gray-800 font-semibold whitespace-nowrap">
                     {day.duha}
                   </td>
-                  <td className="px-4 py-4 text-center font-semibold text-2xl text-gray-900">
+                  <td className="px-4 py-4 text-center font-semibold text-2xl text-gray-900 whitespace-nowrap">
                     {day.timings.dhuhr}
                   </td>
                   {hasIqamah && (
-                    <td className={`px-4 py-4 text-center font-bold text-2xl ${getIqamahCellColor(index, 'zuhr')}`}>
+                    <td className={`px-4 py-4 text-center font-bold text-2xl whitespace-nowrap ${getIqamahCellColor(index, 'zuhr')}`}>
                       {shouldShowIqamah(index, 'zuhr') ? day.iqamahInfo.zuhr?.time : ''}
                     </td>
                   )}
-                  <td className="px-4 py-4 text-center font-semibold text-2xl text-gray-900">
+                  <td className="px-4 py-4 text-center font-semibold text-2xl text-gray-900 whitespace-nowrap">
                     {day.timings.asr}
                   </td>
                   {hasIqamah && (
-                    <td className={`px-4 py-4 text-center font-bold text-2xl ${getIqamahCellColor(index, 'asr')}`}>
+                    <td className={`px-4 py-4 text-center font-bold text-2xl whitespace-nowrap ${getIqamahCellColor(index, 'asr')}`}>
                       {shouldShowIqamah(index, 'asr') ? day.iqamahInfo.asr?.time : ''}
                     </td>
                   )}
-                  <td className="px-4 py-4 text-center font-semibold text-2xl text-gray-900">
+                  <td className="px-4 py-4 text-center font-semibold text-2xl text-gray-900 whitespace-nowrap">
                     {day.timings.maghrib}
                   </td>
                   {hasIqamah && (
-                    <td className={`px-4 py-4 text-center font-bold text-2xl ${getIqamahCellColor(index, 'maghrib')}`}>
+                    <td className={`px-4 py-4 text-center font-bold text-2xl whitespace-nowrap ${getIqamahCellColor(index, 'maghrib')}`}>
                       {shouldShowIqamah(index, 'maghrib') ? day.iqamahInfo.maghrib?.time : ''}
                     </td>
                   )}
-                  <td className="px-4 py-4 text-center font-semibold text-2xl text-gray-900">
+                  <td className="px-4 py-4 text-center font-semibold text-2xl text-gray-900 whitespace-nowrap">
                     {day.timings.isha}
                   </td>
                   {hasIqamah && (
-                    <td className={`px-4 py-4 text-center font-bold text-2xl ${getIqamahCellColor(index, 'isha')}`}>
+                    <td className={`px-4 py-4 text-center font-bold text-2xl whitespace-nowrap ${getIqamahCellColor(index, 'isha')}`}>
                       {shouldShowIqamah(index, 'isha') ? day.iqamahInfo.isha?.time : ''}
                     </td>
                   )}
