@@ -10,40 +10,6 @@ export default function SearchBar({ onSearch, loading }) {
   const [fajrAngle, setFajrAngle] = useState(15);
   const [ishaAngle, setIshaAngle] = useState(18);
   const [asrMethod, setAsrMethod] = useState(0); // 0 = Standard, 1 = Hanafi
-  
-  // Iqamah state
-  const [iqamahRanges, setIqamahRanges] = useState({
-    fajr: [[1, 31, '06:15']],
-    zuhr: [[1, 31, '13:30']],
-    asr: [[1, 31, '15:20']],
-    maghrib: [[1, 31, '17:00']],
-    isha: [[1, 31, '19:30']],
-  });
-
-  const handleAddRange = (prayer) => {
-    const newRange = [1, 31, '00:00'];
-    setIqamahRanges({
-      ...iqamahRanges,
-      [prayer]: [...(iqamahRanges[prayer] || []), newRange],
-    });
-  };
-
-  const handleUpdateRange = (prayer, index, field, value) => {
-    const updated = [...iqamahRanges[prayer]];
-    updated[index][field] = field === 2 ? value : parseInt(value);
-    setIqamahRanges({
-      ...iqamahRanges,
-      [prayer]: updated,
-    });
-  };
-
-  const handleRemoveRange = (prayer, index) => {
-    const updated = iqamahRanges[prayer].filter((_, i) => i !== index);
-    setIqamahRanges({
-      ...iqamahRanges,
-      [prayer]: updated.length > 0 ? updated : [[1, 31, '00:00']],
-    });
-  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -57,7 +23,6 @@ export default function SearchBar({ onSearch, loading }) {
       year: parseInt(year),
       customAngles,
       asrMethod: parseInt(asrMethod),
-      iqamahRanges,
     });
   };
 
@@ -190,71 +155,12 @@ export default function SearchBar({ onSearch, loading }) {
         </div>
       </div>
 
-      {/* Iqamah Schedule */}
-      <div className="border-t pt-4">
-        <h3 className="text-lg font-semibold text-islamic-700 mb-4">⏱️ Iqamah Schedule</h3>
-        
-        {Object.keys(iqamahRanges).map((prayer) => (
-          <div key={prayer} className="mb-4 p-4 bg-gray-50 rounded-lg">
-            <div className="flex justify-between items-center mb-2">
-              <h4 className="font-semibold text-gray-800 capitalize">{prayer}</h4>
-              <button
-                type="button"
-                onClick={() => handleAddRange(prayer)}
-                className="text-xs bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
-              >
-                + Add Range
-              </button>
-            </div>
-
-            {(iqamahRanges[prayer] || []).map((range, index) => (
-              <div key={index} className="flex gap-2 mb-2 items-center flex-wrap">
-                <span className="text-xs text-gray-600">Days</span>
-                <input
-                  type="number"
-                  min="1"
-                  max="31"
-                  value={range[0]}
-                  onChange={(e) => handleUpdateRange(prayer, index, 0, e.target.value)}
-                  className="w-14 px-2 py-1 border border-gray-300 rounded text-xs"
-                />
-                <span className="text-xs text-gray-600">to</span>
-                <input
-                  type="number"
-                  min="1"
-                  max="31"
-                  value={range[1]}
-                  onChange={(e) => handleUpdateRange(prayer, index, 1, e.target.value)}
-                  className="w-14 px-2 py-1 border border-gray-300 rounded text-xs"
-                />
-                <span className="text-xs text-gray-600">Time</span>
-                <input
-                  type="time"
-                  value={range[2]}
-                  onChange={(e) => handleUpdateRange(prayer, index, 2, e.target.value)}
-                  className="px-2 py-1 border border-gray-300 rounded text-xs"
-                />
-                {(iqamahRanges[prayer]?.length || 0) > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveRange(prayer, index)}
-                    className="text-red-600 text-xs hover:text-red-800 ml-2"
-                  >
-                    ✕
-                  </button>
-                )}
-              </div>
-            ))}
-          </div>
-        ))}
-      </div>
-
       <button
         type="submit"
         disabled={loading}
         className="w-full bg-islamic-600 hover:bg-islamic-700 text-white font-semibold py-2 px-4 rounded transition disabled:opacity-50"
       >
-        {loading ? 'Generating...' : 'Generate Prayer Times & Iqamah'}
+        {loading ? 'Generating...' : 'Generate Prayer Times'}
       </button>
     </form>
   );

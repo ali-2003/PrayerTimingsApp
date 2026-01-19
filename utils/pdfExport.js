@@ -1,4 +1,4 @@
-// utils/pdfExport.js - FIXED: No cutoff, proper scaling, full coverage
+// utils/pdfExport.js - CENTERED PDF with full page coverage
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 
@@ -9,76 +9,74 @@ export const exportTableToPDF = async (tableElement, filename = 'prayer-times.pd
       return;
     }
 
-    // Create canvas at lower scale to fit entire table
+    // Create canvas
     const canvas = await html2canvas(tableElement, {
-      scale: 1.2,  // Lower scale so entire content fits
+      scale: 2,
       useCORS: true,
       allowTaint: true,
       logging: false,
       backgroundColor: '#ffffff',
       windowHeight: tableElement.scrollHeight,
       windowWidth: tableElement.scrollWidth,
-      logging: false
     });
 
     const imgData = canvas.toDataURL('image/png');
 
-    // Create PDF - LANDSCAPE A4
+    // Create PDF - PORTRAIT A4 (fills better for tables)
     const pdf = new jsPDF({
-      orientation: 'landscape',
+      orientation: 'portrait',
       unit: 'mm',
       format: 'a4',
-      compress: false
+      compress: true
     });
 
-    // A4 Landscape: 297mm x 210mm
-    const pageWidth = 297;
-    const pageHeight = 210;
-    const margin = 1;  // Minimal margin
+    // A4 Portrait: 210mm x 297mm
+    const pageWidth = 210;
+    const pageHeight = 297;
+    const margin = 0;  // Small margin
 
-    // Calculate image dimensions to fit the page
+    // Calculate image dimensions
     const availableWidth = pageWidth - (margin * 2);
     const availableHeight = pageHeight - (margin * 2);
 
-    // Get canvas aspect ratio
     const canvasWidth = canvas.width;
     const canvasHeight = canvas.height;
     const aspectRatio = canvasWidth / canvasHeight;
 
-    // Calculate final dimensions - fit to width first
+    // SCALE TO FIT - expand to fill entire available space
     let finalWidth = availableWidth;
-    let finalHeight = finalWidth / aspectRatio;
+    let finalHeight = availableWidth / aspectRatio;
 
-    // If height exceeds available, scale down
-    if (finalHeight > availableHeight) {
+    // If content is shorter than page height, stretch it to fill
+    if (finalHeight < availableHeight) {
       finalHeight = availableHeight;
-      finalWidth = finalHeight * aspectRatio;
+      finalWidth = availableHeight * aspectRatio;
     }
 
-    // Position to start from left margin (NOT centered)
-    const xPosition = margin;
-    const yPosition = margin;
+    // CENTER the image on the page
+    const xPosition = (pageWidth - finalWidth) / 2;
+    const yPosition = (pageHeight - finalHeight) / 2;
 
-    // Add image to PDF - no centering, starts from left
+    // Add image CENTERED on page
     pdf.addImage(imgData, 'PNG', xPosition, yPosition, finalWidth, finalHeight);
 
     // Handle multi-page if needed
     let heightRemaining = finalHeight - availableHeight;
     let currentPage = 1;
 
-    while (heightRemaining > 0) {
+    while (heightRemaining > 0.5) {
       currentPage++;
-      pdf.addPage([pageWidth, pageHeight], 'landscape');
-      
-      const position = -(currentPage - 1) * availableHeight + yPosition;
-      pdf.addImage(imgData, 'PNG', xPosition, position, finalWidth, finalHeight);
-      
+      pdf.addPage([pageWidth, pageHeight], 'portrait');
+
+      // Center on subsequent pages too
+      const imgYPos = yPosition - ((currentPage - 1) * availableHeight);
+      pdf.addImage(imgData, 'PNG', xPosition, imgYPos, finalWidth, finalHeight);
+
       heightRemaining -= availableHeight;
     }
 
     // Save the PDF
     pdf.save(filename);
-    
   } catch (error) {
     console.error('PDF Error:', error);
     alert('Error generating PDF');
