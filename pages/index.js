@@ -42,33 +42,19 @@ export default function Home() {
     console.log('Raw iqamahSettings:', iqamahSettings);
 
     // CONVERT from IqamahSettings format to PrayerTable format
+    // New structure: { prayer: { ranges: [...] } }
     const convertedRanges = {};
     
     Object.keys(iqamahSettings).forEach(prayer => {
       const prayerSettings = iqamahSettings[prayer];
       console.log(`\n📝 Converting ${prayer}:`, prayerSettings);
       
-      if (prayerSettings.mode === 'variable') {
-        // VARIABLE MODE: Create array with offset
-        convertedRanges[prayer] = [{
-          startDay: 1,
-          endDay: 31,
-          offset: prayerSettings.variable,
-          isVariable: true,
-          rangeIndex: 0
-        }];
-        console.log(`✅ ${prayer} VARIABLE: offset=${prayerSettings.variable}`);
-      } else {
-        // FIXED MODE: Convert ranges array
-        convertedRanges[prayer] = prayerSettings.ranges.map((range, idx) => ({
-          startDay: range[0],
-          endDay: range[1],
-          time: range[2],
-          isVariable: false,
-          rangeIndex: idx
-        }));
-        console.log(`✅ ${prayer} FIXED: ${prayerSettings.ranges.length} ranges`);
-      }
+      // Just pass through the ranges as-is (they already have the right structure)
+      convertedRanges[prayer] = {
+        ranges: prayerSettings.ranges || []
+      };
+      
+      console.log(`✅ ${prayer}: ${prayerSettings.ranges.length} ranges`);
     });
 
     console.log('\n🟢 CONVERTED RANGES:');

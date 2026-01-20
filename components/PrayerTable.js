@@ -29,8 +29,9 @@ export default function PrayerTable({ prayerData, mosqueInfo, customAngles, sear
   if (iqamahRanges && typeof iqamahRanges === 'object') {
     hasIqamah = Object.keys(iqamahRanges).some(prayer => {
       const prayerSettings = iqamahRanges[prayer];
-      if (prayerSettings.mode === 'variable' && prayerSettings.variable > 0) return true;
-      if (prayerSettings.mode === 'fixed' && Array.isArray(prayerSettings.ranges) && prayerSettings.ranges.length > 0) return true;
+      if (Array.isArray(prayerSettings.ranges) && prayerSettings.ranges.length > 0) {
+        return true;
+      }
       return false;
     });
   }
@@ -62,15 +63,11 @@ export default function PrayerTable({ prayerData, mosqueInfo, customAngles, sear
     const prayerSettings = iqamahRanges[prayer];
     const day = dayIndex + 1;
     
-    // Show for VARIABLE - always show
-    if (prayerSettings.mode === 'variable') return true;
-    
-    // Show for FIXED - show on ALL days in range (not just middle)
-    if (prayerSettings.mode === 'fixed' && Array.isArray(prayerSettings.ranges)) {
+    // Check if day falls within ANY range
+    if (Array.isArray(prayerSettings.ranges)) {
       const matchingRange = prayerSettings.ranges.find(range => {
-        return day >= range[0] && day <= range[1];
+        return day >= range.startDay && day <= range.endDay;
       });
-      // Return true for ALL days in range (removed middle-day logic)
       return matchingRange ? true : false;
     }
     
@@ -81,18 +78,24 @@ export default function PrayerTable({ prayerData, mosqueInfo, customAngles, sear
     if (!hasIqamah || !iqamahRanges?.[prayer]) return null;
     
     const prayerSettings = iqamahRanges[prayer];
+    const day = dayIndex + 1;
     
-    if (prayerSettings.mode === 'variable') {
-      return calculateVariableIqamah(prayerTime, prayerSettings.variable);
-    }
-    
-    if (prayerSettings.mode === 'fixed' && Array.isArray(prayerSettings.ranges)) {
-      const day = dayIndex + 1;
+    if (Array.isArray(prayerSettings.ranges)) {
+      // Find matching range for this day
       const matchingRange = prayerSettings.ranges.find(range => {
-        return day >= range[0] && day <= range[1];
+        return day >= range.startDay && day <= range.endDay;
       });
-      if (matchingRange) {
-        return matchingRange[2];
+      
+      if (!matchingRange) return null;
+      
+      // FIXED type - return the fixed time
+      if (matchingRange.type === 'fixed') {
+        return matchingRange.time;
+      }
+      
+      // VARIABLE type - calculate offset
+      if (matchingRange.type === 'variable') {
+        return calculateVariableIqamah(prayerTime, matchingRange.variable);
       }
     }
     
@@ -103,6 +106,20 @@ export default function PrayerTable({ prayerData, mosqueInfo, customAngles, sear
     try {
       const element = tableRef.current;
       
+      // Store original styles
+      const originalStyles = {};
+      const cells = element.querySelectorAll('td, th');
+      
+      // Add inline styles for centering
+      cells.forEach((cell, idx) => {
+        originalStyles[idx] = {
+          textAlign: cell.style.textAlign,
+          verticalAlign: cell.style.verticalAlign
+        };
+        cell.style.textAlign = 'center';
+        cell.style.verticalAlign = 'middle';
+      });
+      
       // Get the actual element dimensions
       const elementWidth = element.scrollWidth;
       const elementHeight = element.scrollHeight;
@@ -110,26 +127,31 @@ export default function PrayerTable({ prayerData, mosqueInfo, customAngles, sear
       console.log('Element dimensions:', elementWidth, 'x', elementHeight);
       
       const canvas = await html2canvas(element, {
-        scale: 2.0,  // Changed back to 2.0
+        scale: 2.0,
         useCORS: true,
         allowTaint: true,
         logging: false,
         backgroundColor: '#ffffff',
-        // Force canvas to be exact size of element
         width: elementWidth,
         height: elementHeight,
         windowWidth: elementWidth,
         windowHeight: elementHeight,
       });
 
+      // Restore original styles
+      cells.forEach((cell, idx) => {
+        cell.style.textAlign = originalStyles[idx].textAlign;
+        cell.style.verticalAlign = originalStyles[idx].verticalAlign;
+      });
+
       console.log('Canvas dimensions:', canvas.width, 'x', canvas.height);
 
       const imgData = canvas.toDataURL('image/png');
       
-      const pdfWidth = 210;   // A4 Portrait width
-      const pdfHeight = 297;  // A4 Portrait height
-      const margin = 3;       // Minimal margin
-      const bottomPadding = 15; // Extra space at bottom
+      const pdfWidth = 210;
+      const pdfHeight = 297;
+      const margin = 3;
+      const bottomPadding = 15;
       
       const pdf = new jsPDF({
         orientation: 'portrait',
@@ -145,17 +167,14 @@ export default function PrayerTable({ prayerData, mosqueInfo, customAngles, sear
       const availWidth = pdfWidth - (margin * 2);
       const availHeight = pdfHeight - (margin * 2) - bottomPadding;
       
-      // Calculate height based on width to maintain aspect ratio
       let finalWidth = availWidth;
       let finalHeight = finalWidth / aspectRatio;
       
-      // If height exceeds available, scale down to fit
       if (finalHeight > availHeight) {
         finalHeight = availHeight;
         finalWidth = finalHeight * aspectRatio;
       }
       
-      // Start from left margin
       const xPos = margin;
       const yPos = margin;
       
@@ -163,7 +182,6 @@ export default function PrayerTable({ prayerData, mosqueInfo, customAngles, sear
       
       pdf.addImage(imgData, 'PNG', xPos, yPos, finalWidth, finalHeight);
       
-      // Multi-page support
       if (finalHeight > availHeight) {
         let heightRemaining = finalHeight - availHeight;
         let pageNum = 1;

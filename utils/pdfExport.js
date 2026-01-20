@@ -33,7 +33,7 @@ export const exportTableToPDF = async (tableElement, filename = 'prayer-times.pd
     // A4 Portrait: 210mm x 297mm
     const pageWidth = 210;
     const pageHeight = 297;
-    const margin = 0;  // Small margin
+    const margin = 2;  // Small margin
 
     // Calculate image dimensions
     const availableWidth = pageWidth - (margin * 2);
