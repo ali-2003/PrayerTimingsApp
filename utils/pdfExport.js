@@ -1,4 +1,4 @@
-// utils/pdfExport.js - CENTERED PDF with full page coverage
+// utils/pdfExport.js - jsPDF with html2canvas for better PDF control
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 
@@ -9,76 +9,71 @@ export const exportTableToPDF = async (tableElement, filename = 'prayer-times.pd
       return;
     }
 
-    // Create canvas
+    // Get element dimensions
+    const elementWidth = tableElement.scrollWidth;
+    const elementHeight = tableElement.scrollHeight;
+
+    // Create canvas from HTML with high quality
     const canvas = await html2canvas(tableElement, {
-      scale: 2,
+      scale: 3,  // Higher quality for portrait
       useCORS: true,
       allowTaint: true,
       logging: false,
       backgroundColor: '#ffffff',
-      windowHeight: tableElement.scrollHeight,
-      windowWidth: tableElement.scrollWidth,
+      width: elementWidth,
+      height: elementHeight,
+      windowWidth: elementWidth,
+      windowHeight: elementHeight,
     });
 
-    const imgData = canvas.toDataURL('image/png');
-
-    // Create PDF - PORTRAIT A4 (fills better for tables)
+    // Create PDF - portrait for better fit
     const pdf = new jsPDF({
-      orientation: 'portrait',
+      orientation: 'landscape',
       unit: 'mm',
       format: 'a4',
-      compress: true
+      compress: false
     });
 
-    // A4 Portrait: 210mm x 297mm
-    const pageWidth = 210;
-    const pageHeight = 297;
-    const margin = 2;  // Small margin
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = pdf.internal.pageSize.getHeight();
 
-    // Calculate image dimensions
-    const availableWidth = pageWidth - (margin * 2);
-    const availableHeight = pageHeight - (margin * 2);
+    const imgData = canvas.toDataURL('image/jpeg', 0.99);
+    const imgWidth = canvas.width;
+    const imgHeight = canvas.height;
+    const ratio = imgWidth / imgHeight;
 
-    const canvasWidth = canvas.width;
-    const canvasHeight = canvas.height;
-    const aspectRatio = canvasWidth / canvasHeight;
+    // Use almost entire page - 2mm margins
+    let finalWidth = pdfWidth - 4;
+    let finalHeight = finalWidth / ratio;
 
-    // SCALE TO FIT - expand to fill entire available space
-    let finalWidth = availableWidth;
-    let finalHeight = availableWidth / aspectRatio;
-
-    // If content is shorter than page height, stretch it to fill
-    if (finalHeight < availableHeight) {
-      finalHeight = availableHeight;
-      finalWidth = availableHeight * aspectRatio;
+    // If too tall, scale down to fit
+    if (finalHeight > pdfHeight - 4) {
+      finalHeight = pdfHeight - 4;
+      finalWidth = finalHeight * ratio;
     }
 
-    // CENTER the image on the page
-    const xPosition = (pageWidth - finalWidth) / 2;
-    const yPosition = (pageHeight - finalHeight) / 2;
+    // Center the image
+    const xOffset = (pdfWidth - finalWidth) / 2;
+    const yOffset = 2;
 
-    // Add image CENTERED on page
-    pdf.addImage(imgData, 'PNG', xPosition, yPosition, finalWidth, finalHeight);
+    pdf.addImage(imgData, 'JPEG', xOffset, yOffset, finalWidth, finalHeight);
 
     // Handle multi-page if needed
-    let heightRemaining = finalHeight - availableHeight;
-    let currentPage = 1;
+    let heightRemaining = finalHeight - (pdfHeight - 4);
+    let pageNum = 1;
 
     while (heightRemaining > 0.5) {
-      currentPage++;
-      pdf.addPage([pageWidth, pageHeight], 'portrait');
-
-      // Center on subsequent pages too
-      const imgYPos = yPosition - ((currentPage - 1) * availableHeight);
-      pdf.addImage(imgData, 'PNG', xPosition, imgYPos, finalWidth, finalHeight);
-
-      heightRemaining -= availableHeight;
+      pageNum++;
+      pdf.addPage([pdfWidth, pdfHeight], 'landscape');
+      const nextYPos = yOffset - ((pageNum - 1) * (pdfHeight - 4));
+      pdf.addImage(imgData, 'JPEG', xOffset, nextYPos, finalWidth, finalHeight);
+      heightRemaining -= (pdfHeight - 4);
     }
 
-    // Save the PDF
     pdf.save(filename);
+
   } catch (error) {
     console.error('PDF Error:', error);
-    alert('Error generating PDF');
+    alert('Error generating PDF: ' + error.message);
   }
 };
