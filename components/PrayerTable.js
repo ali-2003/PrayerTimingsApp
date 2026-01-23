@@ -119,17 +119,24 @@ export default function PrayerTable({ prayerData, mosqueInfo, customAngles, sear
     <div className="mt-0">
       <div className="bg-white p-0 border-2 border-islamic-700 flex flex-col" ref={tableRef} style={{ width: '100%', margin: '0', padding: '0' }}>
         {/* Header */}
-        <div className="border-b-2 border-islamic-700 pb-0 mb-0 px-0 flex-shrink-0 w-full">
-          <div className="flex justify-between items-center px-1">
-            <h1 className="text-base font-bold text-islamic-700">🕌 {mosqueInfo.name}</h1>
-            <p className="text-md font-semibold text-gray-800">{monthName} {searchParams.year} • {hijriMonthsArray.join(' - ')} 1447</p>
-          </div>
-        </div>
+        <div className="border-b-2 border-islamic-700 flex-shrink-0 w-full">
+  <div className="flex flex-col items-center justify-center py-4">
+    <h1 className="text-2xl font-bold text-islamic-700">
+      🕌 {mosqueInfo.name}
+    </h1>
+    <p className="text-xl font-semibold text-gray-800">
+      {monthName} {searchParams.year} • {hijriMonthsArray.join(' - ')} 1447
+    </p>
+  </div>
+</div>
+
+
+
 
         {/* Table */}
         <div className="w-full flex-grow overflow-visible px-0">
           <div className="w-full overflow-x-auto">
-            <table className="w-full border-collapse" style={{ width: '100%', tableLayout: 'fixed' }}>
+            <table className="w-full border-collapse" style={{ width: '100%' }}>
               <thead>
                 <tr className="bg-blue-600 text-white">
                   <th className="px-2 py-2 border-2 border-gray-400 font-bold text-md">Day</th>
