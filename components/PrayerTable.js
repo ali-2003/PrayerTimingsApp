@@ -209,7 +209,7 @@ export default function PrayerTable({
                     </th>
                   )}
                   <th className="px-2 py-2 border-2 border-gray-500 font-bold text-md">
-                    <div className="flex items-center justify-center h-full">Duha</div>
+                    <div className="flex items-center justify-center h-full">Sunrise</div>
                   </th>
                   <th className="px-2 py-2 border-2 border-gray-500 font-bold text-md">
                     <div className="flex items-center justify-center h-full">Zuhr</div>
